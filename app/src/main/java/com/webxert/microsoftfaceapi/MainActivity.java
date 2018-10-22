@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.microsoft.projectoxford.face.FaceServiceRestClient;
 import com.microsoft.projectoxford.face.contract.CreatePersonResult;
@@ -33,11 +34,12 @@ public class MainActivity extends AppCompatActivity {
 
     ImageView imageView;
     Button button;
-    private FaceServiceRestClient faceServiceRestClient = new FaceServiceRestClient("https://westcentralus.api.cognitive.microsoft.com/face/v1.0", "fb5b93f74a464f19992f53dce8e24af0");
-    String personGroupId = "starts";
+    private FaceServiceRestClient faceServiceRestClient = new FaceServiceRestClient("https://westcentralus.api.cognitive.microsoft.com/face/v1.0", "8b505b08755d46cd9aa514f6a8d7ab17");
+    String personGroupId = "xyz";
     Face facesDetected[];
     Bitmap bitmap;
 
+    TextView textView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,15 +47,35 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-
-
-        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.class3);
+        textView = findViewById(R.id.name);
+        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.zayn_2);
         imageView = findViewById(R.id.imageView);
         imageView.setImageBitmap(bitmap);
         findViewById(R.id.detect).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 detectAndFrame(bitmap);
+
+//                Thread thread = new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        try {
+//                            TrainingStatus trainingStatus = faceServiceRestClient.getPersonGroupTrainingStatus("xyz");
+//                            Log.e("trainingstatus", trainingStatus.status + " ");
+//
+//                        } catch (ClientException e) {
+//                            e.printStackTrace();
+//                            Log.e(MainActivity.class.getSimpleName(), e.getMessage());
+//
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                            Log.e(MainActivity.class.getSimpleName(), e.getMessage());
+//                        }
+//                    }
+//                });
+//                thread.start();
+
+
             }
         });
 
@@ -95,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                     Face[] faces = faceServiceRestClient.detect(inputStreams[0], true, false, null);
                     if (faces == null) {
                         publishProgress("Unable to detect!");
+                        progressDialog.dismiss();
                         return null;
                     }
                     publishProgress(String.format("%s face(s) detected!", faces.length));
@@ -112,7 +135,8 @@ public class MainActivity extends AppCompatActivity {
                 if (faces == null) return;
                 facesDetected = new Face[faces.length];
                 facesDetected = faces;
-                //imageView.setImageBitmap(drawRectsOnFaces(bitmap, faces));
+                Log.e(MainActivity.class.getSimpleName(), faces.length + " face(s) detected!");
+                // imageView.setImageBitmap(drawRectsOnFaces(bitmap, faces));
             }
         };
         asyncTask.execute(byteArrayInputStream);
@@ -160,9 +184,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(IdentifyResult[] identifyResult) {
             progressDialog.dismiss();
-            for (IdentifyResult result : identifyResult) {
-                new PersonDetectTask(this.personGroupId).execute(result.candidates.get(0).personId);
-            }
+            if (identifyResult.length > 0) {
+                for (IdentifyResult result : identifyResult) {
+                    new PersonDetectTask(this.personGroupId).execute(result.candidates.get(0).personId);
+                }
+            } else
+                Log.e(MainActivity.class.getSimpleName(), "IdentifyArray is empty");
+
         }
 
         @Override
@@ -170,12 +198,15 @@ public class MainActivity extends AppCompatActivity {
             try {
                 publishProgress("Getting person group status...");
                 TrainingStatus trainingStatus = faceServiceRestClient.getPersonGroupTrainingStatus(this.personGroupId);
+                Log.e("trainingStatus", trainingStatus.status + " ");
+                progressDialog.dismiss();
 
                 if (trainingStatus.status != TrainingStatus.Status.Succeeded) {
                     publishProgress("Person group training status is " + trainingStatus.status);
                     return null;
                 }
                 publishProgress("Identifying...");
+
 
                 return faceServiceRestClient.identity(this.personGroupId, uuids, 1);
 
@@ -223,8 +254,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Person doInBackground(UUID... uuids) {
             try {
-                publishProgress("Getting person group status...");
-                return faceServiceRestClient.getPerson(this.personGroupId, uuids[0]);
+                // publishProgress("Getting person group status...");
+                Log.e("id", uuids[0] + "");
+                Person person = faceServiceRestClient.getPerson(this.personGroupId, uuids[0]);
+                dialog.dismiss();
+                Log.e("personname", person.name);
+                return person;
             } catch (ClientException e) {
                 Log.e("ClientException", e.getMessage());
                 return null;
@@ -238,12 +273,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Bitmap drawRectOnImage(Bitmap bitmap, Face[] facesDetected, String name) {
+        Log.e(MainActivity.class.getSimpleName(), "inside rectangel");
         Bitmap copy = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         Canvas canvas = new Canvas(copy);
 
         Paint paint = new Paint();
         paint.setAntiAlias(true);
-        paint.setStyle(Paint.Style.STROKE);;
+        paint.setStyle(Paint.Style.STROKE);
+
         paint.setColor(Color.WHITE);
         paint.setStrokeWidth(12);
 
@@ -255,8 +292,10 @@ public class MainActivity extends AppCompatActivity {
                         faceRectangle.left + faceRectangle.width,
                         faceRectangle.height + faceRectangle.top, paint);
 
-                drawNameOnCanvas(canvas, 100, ((faceRectangle.width + faceRectangle.left) / 2) + 100, ((faceRectangle.top + faceRectangle.height) / 2) + 50, Color.WHITE, name);
+                //drawNameOnCanvas(canvas, 10, ((faceRectangle.width + faceRectangle.left) / 2) + 100, ((faceRectangle.top + faceRectangle.height) / 2) + 50, Color.WHITE, name);
 
+                textView.setVisibility(View.VISIBLE);
+                textView.setText(name);
             }
         }
         return copy;
