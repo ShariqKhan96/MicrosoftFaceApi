@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
     Face facesDetected[];
     Bitmap bitmap;
 
+    String names = "";
+
+
     TextView textView;
 
     @Override
@@ -48,14 +51,13 @@ public class MainActivity extends AppCompatActivity {
 
 
         textView = findViewById(R.id.name);
-        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.zayn_2);
+        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.oned);
         imageView = findViewById(R.id.imageView);
         imageView.setImageBitmap(bitmap);
         findViewById(R.id.detect).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 detectAndFrame(bitmap);
-
 //                Thread thread = new Thread(new Runnable() {
 //                    @Override
 //                    public void run() {
@@ -74,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 //                });
 //                thread.start();
-
 
             }
         });
@@ -259,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
                 Person person = faceServiceRestClient.getPerson(this.personGroupId, uuids[0]);
                 dialog.dismiss();
                 Log.e("personname", person.name);
+                names = names.concat(person.name + " ");
                 return person;
             } catch (ClientException e) {
                 Log.e("ClientException", e.getMessage());
@@ -292,10 +294,10 @@ public class MainActivity extends AppCompatActivity {
                         faceRectangle.left + faceRectangle.width,
                         faceRectangle.height + faceRectangle.top, paint);
 
-                //drawNameOnCanvas(canvas, 10, ((faceRectangle.width + faceRectangle.left) / 2) + 100, ((faceRectangle.top + faceRectangle.height) / 2) + 50, Color.WHITE, name);
+                drawNameOnCanvas(canvas, 50, ((faceRectangle.width + faceRectangle.left) / 2) + 100, ((faceRectangle.top + faceRectangle.height) / 2) + 50, Color.WHITE, name);
 
                 textView.setVisibility(View.VISIBLE);
-                textView.setText(name);
+                textView.setText(names);
             }
         }
         return copy;
