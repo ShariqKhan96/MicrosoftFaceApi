@@ -310,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.WHITE);
         paint.setStrokeWidth(12);
+        paint.setTextSize(20);
 
         float textWidth = paint.measureText(name);
         canvas.drawText(name, x - (textWidth / 2), y - (textSize / 2), paint);
