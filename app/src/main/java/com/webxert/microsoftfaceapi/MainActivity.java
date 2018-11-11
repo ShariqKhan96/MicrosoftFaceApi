@@ -34,8 +34,8 @@ public class MainActivity extends AppCompatActivity {
 
     ImageView imageView;
     Button button;
-    private FaceServiceRestClient faceServiceRestClient = new FaceServiceRestClient("https://westcentralus.api.cognitive.microsoft.com/face/v1.0", "8b505b08755d46cd9aa514f6a8d7ab17");
-    String personGroupId = "xyz";
+    private FaceServiceRestClient faceServiceRestClient = new FaceServiceRestClient("https://westcentralus.api.cognitive.microsoft.com/face/v1.0", "7c73377533b04d21a99310908f9e008e");
+    String personGroupId = "1d";
     Face facesDetected[];
     Bitmap bitmap;
 
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         textView = findViewById(R.id.name);
-        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.oned);
+        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.oned_2);
         imageView = findViewById(R.id.imageView);
         imageView.setImageBitmap(bitmap);
         findViewById(R.id.detect).setOnClickListener(new View.OnClickListener() {
@@ -187,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.dismiss();
             if (identifyResult.length > 0) {
                 for (IdentifyResult result : identifyResult) {
+                    Log.e("candidates", String.valueOf(result.candidates.size()));
                     new PersonDetectTask(this.personGroupId).execute(result.candidates.get(0).personId);
                 }
             } else
@@ -294,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
                         faceRectangle.left + faceRectangle.width,
                         faceRectangle.height + faceRectangle.top, paint);
 
-                drawNameOnCanvas(canvas, 50, ((faceRectangle.width + faceRectangle.left) / 2) + 100, ((faceRectangle.top + faceRectangle.height) / 2) + 50, Color.WHITE, name);
+               // drawNameOnCanvas(canvas, 50, ((faceRectangle.width + faceRectangle.left) / 2) + 100, ((faceRectangle.top + faceRectangle.height) / 2) + 50, Color.WHITE, name);
 
                 textView.setVisibility(View.VISIBLE);
                 textView.setText(names);
